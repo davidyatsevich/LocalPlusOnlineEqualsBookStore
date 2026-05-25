@@ -1,8 +1,8 @@
-class Database{
-    constructor(){
+class Database {
+    constructor() {
         this.Accounts = [];
         this.Books = [];
         this.Orders = [];
     }
 }
-module.exports = Database;
+module.exports = new Database();
