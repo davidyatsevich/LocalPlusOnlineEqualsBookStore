@@ -1,3 +1,5 @@
+//======================
+// Person abstract base class
 class Person{
     constructor(id, name, email, password) {
         this.id = id;
@@ -7,16 +9,20 @@ class Person{
     }
 }
 
+//======================
+// Customer subclass
 class Customer extends Person {
-    constructor(id, name, email) {
-        super(id, name, email);
+    constructor(id, name, email, password) {
+        super(id, name, email, password);
         this.role = "customer";
     }
 }
 
+//======================
+// Staff subclass
 class Staff extends Person {
-    constructor(id, name, email) {
-        super(id, name, email);
+    constructor(id, name, email, password) {
+        super(id, name, email, password);
         this.role = "staff";
     }
 }
