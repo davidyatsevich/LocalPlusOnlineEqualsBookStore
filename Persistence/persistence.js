@@ -8,4 +8,6 @@ class Database {
         this.Orders = [];
     }
 }
+//=================
+// Singleton instance - import but do not instantiate or initialize a database elsewhere
 module.exports = new Database();
