@@ -55,3 +55,5 @@ class OrderRepository {
         return orderId;
     }
 }
+
+module.exports = OrderRepository;
