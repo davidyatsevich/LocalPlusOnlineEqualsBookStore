@@ -1,11 +1,14 @@
+const fs = require('fs');
+const path = require('path');
+
 class Database {
     //=================
-    // Simulated in-memory database
+    // Loads data from JSON files into memory at startup
     // Do not access arrays directly - use repositories only
     constructor() {
-        this.Accounts = [];
-        this.Books = [];
-        this.Orders = [];
+        this.Books = JSON.parse(fs.readFileSync(path.join(__dirname, 'books.json'))).Books;
+        this.Accounts = JSON.parse(fs.readFileSync(path.join(__dirname, 'accounts.json'))).Accounts;
+        this.Orders = JSON.parse(fs.readFileSync(path.join(__dirname, 'orders.json'))).Orders;
     }
 }
 //=================
