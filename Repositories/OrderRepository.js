@@ -18,13 +18,22 @@ class OrderRepository {
     saveOrders() {
         fs.writeFileSync(ORDERS_PATH, JSON.stringify({ Orders: this.db.Orders }, null, 2));
     }
+
     //=================
     // Create a new order
-    createOrder(order) {
-        this.db.Orders.push(order);
+    createOrder(accountId, bookId, quantity) {
+        const newOrder = {
+            id: Date.now(),
+            accountId,
+            bookId,
+            quantity,
+            date: new Date().toISOString()
+        };
+        this.db.Orders.push(newOrder);
         this.saveOrders();
-        return order;
+        return newOrder;
     }
+
     //=================
     // Get an existing order
     getOrder(orderId) {
@@ -37,6 +46,7 @@ class OrderRepository {
     getAllOrders() {
         return this.db.Orders;
     }
+
     //=================
     // Update an existing order
     updateOrder(orderId, updatedOrder) {
@@ -47,6 +57,7 @@ class OrderRepository {
         }
         return orderId;
     }
+    
     //=================
     // Delete an existing order
     deleteOrder(orderId) {
