@@ -1,0 +1,12 @@
+//=============================================================================
+// SWE30003 - Bookstore Web Frontend: Books Data Store
+// Reference Coding Standard: Google JavaScript Style Guide (ES6 Modules)
+//=============================================================================
+
+export const BOOKS = [
+  { id: 1, author: 'William Shakespeare', title: 'Macbeth', pricePerCopy: 12.99, copiesInStock: 15 },
+  { id: 2, author: 'Jane Austen', title: 'Pride and Prejudice', pricePerCopy: 10.99, copiesInStock: 20 },
+  { id: 3, author: 'George Orwell', title: '1984', pricePerCopy: 14.99, copiesInStock: 8 },
+  { id: 4, author: 'F. Scott Fitzgerald', title: 'The Great Gatsby', pricePerCopy: 11.99, copiesInStock: 12 },
+  { id: 5, author: 'Harper Lee', title: 'To Kill a Mockingbird', pricePerCopy: 13.99, copiesInStock: 6 },
+];

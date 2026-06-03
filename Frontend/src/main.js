@@ -1,60 +1,134 @@
-import './style.css'
-import javascriptLogo from './assets/javascript.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import { setupCounter } from './counter.js'
+//=============================================================================
+// SWE30003 - Bookstore Web Frontend: Application Entry Point
+// Reference Coding Standard: Google JavaScript Style Guide (ES6 Modules)
+//=============================================================================
 
-document.querySelector('#app').innerHTML = `
-<section id="center">
-  <div class="hero">
-    <img src="${heroImg}" class="base" width="170" height="179">
-    <img src="${javascriptLogo}" class="framework" alt="JavaScript logo"/>
-    <img src="${viteLogo}" class="vite" alt="Vite logo" />
+import './style.css';
+
+import { renderHome } from './components/views/Home.js';
+import { renderBrowse, setupBrowseListeners } from './components/views/Browse.js';
+import { renderCart, setupCartListeners } from './components/views/Cart.js';
+import { renderLogin } from './components/views/Login.js';
+
+import { cart, addToCart, removeFromCart, clearCart, getCartTotal } from './store/cart.js';
+
+// ---------------------------------------------------------------------------
+// App shell
+// ---------------------------------------------------------------------------
+const appEl = document.querySelector('#app');
+
+appEl.innerHTML = `
+  <div class="container">
+    <header>
+      <h1>Favourite Books</h1>
+      <p class="store-subtitle">Glenferrie Road, Hawthorn</p>
+    </header>
+    <nav class="nav-tabs" aria-label="Main navigation">
+      <button class="nav-btn active" data-view="home">Home</button>
+      <button class="nav-btn" data-view="browse">Browse Books</button>
+      <button class="nav-btn" data-view="cart">Cart (<span id="cartCount">0</span>)</button>
+      <button class="nav-btn" data-view="login">Login</button>
+    </nav>
+    <main id="viewContent"></main>
   </div>
-  <div>
-    <h1>Get started</h1>
-    <p>Edit <code>src/main.js</code> and save to test <code>HMR</code></p>
-  </div>
-  <button id="counter" type="button" class="counter"></button>
-</section>
+`;
 
-<div class="ticks"></div>
+const viewContent = document.getElementById('viewContent');
 
-<section id="next-steps">
-  <div id="docs">
-    <svg class="icon" role="presentation" aria-hidden="true"><use href="/icons.svg#documentation-icon"></use></svg>
-    <h2>Documentation</h2>
-    <p>Your questions, answered</p>
-    <ul>
-      <li>
-        <a href="https://vite.dev/" target="_blank">
-          <img class="logo" src="${viteLogo}" alt="" />
-          Explore Vite
-        </a>
-      </li>
-      <li>
-        <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript" target="_blank">
-          <img class="button-icon" src="${javascriptLogo}" alt="">
-          Learn more
-        </a>
-      </li>
-    </ul>
-  </div>
-  <div id="social">
-    <svg class="icon" role="presentation" aria-hidden="true"><use href="/icons.svg#social-icon"></use></svg>
-    <h2>Connect with us</h2>
-    <p>Join the Vite community</p>
-    <ul>
-      <li><a href="https://github.com/vitejs/vite" target="_blank"><svg class="button-icon" role="presentation" aria-hidden="true"><use href="/icons.svg#github-icon"></use></svg>GitHub</a></li>
-      <li><a href="https://chat.vite.dev/" target="_blank"><svg class="button-icon" role="presentation" aria-hidden="true"><use href="/icons.svg#discord-icon"></use></svg>Discord</a></li>
-      <li><a href="https://x.com/vite_js" target="_blank"><svg class="button-icon" role="presentation" aria-hidden="true"><use href="/icons.svg#x-icon"></use></svg>X.com</a></li>
-      <li><a href="https://bsky.app/profile/vite.dev" target="_blank"><svg class="button-icon" role="presentation" aria-hidden="true"><use href="/icons.svg#bluesky-icon"></use></svg>Bluesky</a></li>
-    </ul>
-  </div>
-</section>
+// ---------------------------------------------------------------------------
+// Cart count badge
+// ---------------------------------------------------------------------------
+function updateCartCount() {
+  const countEl = document.getElementById('cartCount');
+  if (countEl) {
+    const total = cart.reduce((sum, entry) => sum + entry.quantity, 0);
+    countEl.textContent = total;
+  }
+}
 
-<div class="ticks"></div>
-<section id="spacer"></section>
-`
+// ---------------------------------------------------------------------------
+// Navigation
+// ---------------------------------------------------------------------------
+let currentView = null;
 
-setupCounter(document.querySelector('#counter'))
+/**
+ * Navigate to a named view. Pass null to only update the cart count badge
+ * without changing the rendered view.
+ * @param {string|null} view
+ */
+function navigateTo(view) {
+  if (view === null) {
+    updateCartCount();
+    return;
+  }
+
+  currentView = view;
+
+  // Update active class on nav buttons
+  document.querySelectorAll('.nav-btn').forEach((btn) => {
+    btn.classList.toggle('active', btn.dataset.view === view);
+  });
+
+  // Render the appropriate view
+  switch (view) {
+    case 'home':
+      viewContent.innerHTML = renderHome();
+      break;
+
+    case 'browse':
+      viewContent.innerHTML = renderBrowse();
+      setupBrowseListeners(cart, addToCart, updateCartCount);
+      break;
+
+    case 'cart':
+      viewContent.innerHTML = renderCart(cart);
+      setupCartListeners(
+        cart,
+        removeFromCart,
+        clearCart,
+        () => {
+          updateCartCount();
+          navigateTo('cart');
+        }
+      );
+      break;
+
+    case 'login':
+      viewContent.innerHTML = renderLogin();
+      break;
+
+    default:
+      viewContent.innerHTML = renderHome();
+  }
+
+  updateCartCount();
+
+  // Scroll back to top of view on navigation
+  viewContent.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// ---------------------------------------------------------------------------
+// Event delegation — nav buttons
+// ---------------------------------------------------------------------------
+document.querySelector('.nav-tabs').addEventListener('click', (e) => {
+  const btn = e.target.closest('.nav-btn');
+  if (btn && btn.dataset.view) {
+    navigateTo(btn.dataset.view);
+  }
+});
+
+// ---------------------------------------------------------------------------
+// Event delegation — [data-nav] links inside view content
+// ---------------------------------------------------------------------------
+viewContent.addEventListener('click', (e) => {
+  const trigger = e.target.closest('[data-nav]');
+  if (trigger) {
+    e.preventDefault();
+    navigateTo(trigger.dataset.nav);
+  }
+});
+
+// ---------------------------------------------------------------------------
+// Initial render
+// ---------------------------------------------------------------------------
+navigateTo('home');
