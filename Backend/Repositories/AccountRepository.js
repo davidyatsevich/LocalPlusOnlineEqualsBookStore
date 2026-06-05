@@ -1,62 +1,89 @@
 class AccountsRepository {
+
     constructor(db) {
         this.db = db;
     }
 
-
-    // Create new account (customer or staff)
+    // Create Account -------------------------------------------------------
     createAccount(account) {
-        this.db.accounts.push(account);
+
+        // Add new account to memory
+        this.db.Accounts.push(account);
+
+        // Save changes to accounts.json
+        this.db.saveAccounts();
+
         return account;
     }
 
-    // Get all accounts
+    // Get all accounts-------------------------------------------------------
     getAllAccounts() {
-        return this.db.accounts;
+        return this.db.Accounts;
     }
 
-    //Find account by ID
+    // Find account by id-------------------------------------------------------
     getAccountById(id) {
-        return this.db.accounts.find(acc => acc.id === id) || null;
+        return this.db.Accounts.find(a => a.id === Number(id)) || null;
     }
 
-    //Find account by email (used for login)
+    // find account by email-------------------------------------------------------
     getAccountByEmail(email) {
-        return this.db.accounts.find(acc => acc.email === email) || null;
+        return this.db.Accounts.find(
+            a => a.email.toLowerCase() === email.toLowerCase()
+        ) || null;
     }
 
-    //Validate login credentials
+    // login validation-------------------------------------------------------
     validateLogin(email, password) {
-        const account = this.getAccountByEmail(email);
+        const acc = this.getAccountByEmail(email);
+        if (!acc) return null;
 
-        if (!account) return null;
-
-        if (account.password !== password) return null;
-
-        return account; // login success
+        return acc.password === password ? acc : null;
     }
 
-    // Update account details
-    updateAccount(id, updatedData) {
-        const index = this.db.accounts.findIndex(acc => acc.id === id);
+    // update account and save -------------------------------------------------------
+    updateAccount(id, data) {
 
-        if (index === -1) return null;
+        const acc = this.getAccountById(id);
+        if (!acc) return false;
 
-        this.db.accounts[index] = {
-            ...this.db.accounts[index],
-            ...updatedData
-        };
+        // Update fields in memory
+        Object.assign(acc, data);
 
-        return this.db.accounts[index];
+        //Save changes to accounts.json
+        this.db.saveAccounts();
+
+        return true;
     }
 
-    //Delete account
+    // delete account and save -------------------------------------------------------
     deleteAccount(id) {
-        const initialLength = this.db.accounts.length;
 
-        this.db.accounts = this.db.accounts.filter(acc => acc.id !== id);
+        const before = this.db.Accounts.length;
 
-        return this.db.accounts.length < initialLength;
+        // Remove account from memory
+        this.db.Accounts = this.db.Accounts.filter(
+            a => a.id !== Number(id)
+        );
+
+        const changed = this.db.Accounts.length < before;
+
+        // Save only if something was deleted
+        if (changed) {
+            this.db.saveAccounts();
+        }
+
+        return changed;
+    }
+
+    // filter customers-------------------------------------------------------
+    getCustomers() {
+        return this.db.Accounts.filter(a => a.role === "customer");
+    }
+
+    // filter staff-------------------------------------------------------
+    getStaff() {
+        return this.db.Accounts.filter(a => a.role === "staff");
     }
 }
 

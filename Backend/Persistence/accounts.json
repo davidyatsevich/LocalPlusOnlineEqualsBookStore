@@ -1,3 +1,32 @@
-{ 
-    "Accounts": [] 
+{
+  "Accounts": [
+    {
+      "id": 1,
+      "name": "John Smith",
+      "email": "john@gmail.com",
+      "password": "customer123",
+      "role": "customer"
+    },
+    {
+      "id": 2,
+      "name": "Sarah Johnson",
+      "email": "sarah@gmail.com",
+      "password": "customer456",
+      "role": "customer"
+    },
+    {
+      "id": 100,
+      "name": "Admin User",
+      "email": "admin@bookstore.com",
+      "password": "admin123",
+      "role": "staff"
+    },
+    {
+      "id": 101,
+      "name": "Book Manager",
+      "email": "manager@bookstore.com",
+      "password": "manager123",
+      "role": "staff"
+    }
+  ]
 }

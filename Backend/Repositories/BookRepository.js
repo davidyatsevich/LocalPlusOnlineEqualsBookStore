@@ -49,16 +49,21 @@ class BookRepository {
     }
 
     //get book by author
-    getBookByAuthor(title){
+    getBookByAuthor(author){
         return this.books.filter(book =>
             book.author.toLowerCase().includes(author.toLowerCase())
         );
     }
 
     //add book-----------------------------------------------------------------
-    addBook(book) {
+    addBook(book) {   
+    // prevent duplicate IDs
+        if (this.getBookById(book.id)) {
+            throw new Error("Book ID already exists");
+        }
         this.books.push(book);
         this.saveBooks();
+        return book;
     }
 
     //update book---------------------------------------------------------------
@@ -68,7 +73,7 @@ class BookRepository {
             return false;
         }
 
-        this.books[index] = updatedBook;
+        Object.assign(book, updatedData);
         this.saveBooks();
         return true;
     }
@@ -93,7 +98,7 @@ class BookRepository {
 
         if (!book) return false;
 
-        book.reduceBookStock(copies);
+        book.reduceStock(copies);
         this.saveBooks();
         return true;
     }

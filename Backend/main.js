@@ -17,7 +17,7 @@ const Invoice = require('./BusinessLogic/Invoice');
 
 //=================
 // Actors
-const { Customer, Staff } = require('./Actors/actors');
+const { Customer, Staff } = require('./BusinessLogic/actors');
 
 //=================
 // Initialise Repositories
