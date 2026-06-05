@@ -114,4 +114,4 @@ class BookRepository {
     }
 }
 
-module.exports = new BookRepository();
+module.exports = BookRepository;
