@@ -8,7 +8,7 @@ const db = require('./Persistence/persistence');
 
 //=================
 // Repositories
-const OrderRepository = require('./Repositories/OrderRepository');
+const OrderRepository = require('./Backend/Repositories/OrderRepository');
 
 //=================
 // Business Logic
@@ -29,7 +29,7 @@ const order = new Order(orderRepository);
 const invoice = new Invoice(orderRepository);
 
 //=================
-// Future imports (not yet implemented)
+// Future imports (not yet implemented?
 // const BookRepository = require('./Repositories/BookRepository');
 // const AccountRepository = require('./Repositories/AccountRepository');
 // const { Book } = require('./BusinessLogic/Book');
