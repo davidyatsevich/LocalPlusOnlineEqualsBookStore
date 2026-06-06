@@ -1,10 +1,8 @@
 const fastify = require("fastify")({ logger: true });
 const cors = require("@fastify/cors");
 
-// persistence----------------------------------------------------------------------
 const db = require("./Persistence/persistence");
 
-// require business and repository layer-------------------------------------------
 const Catalogue = require("./BusinessLogic/Catalogue");
 const BookRepository = require("./Repositories/BookRepository");
 const AccountsRepository = require("./Repositories/AccountRepository");
@@ -13,29 +11,28 @@ const Invoice = require("./BusinessLogic/Invoice");
 const Order = require("./BusinessLogic/Order");
 const SalesReport = require("./BusinessLogic/SalesReport");
 const ShoppingCart = require("./BusinessLogic/ShoppingCart");
+const PaymentDetails = require("./BusinessLogic/PaymentDetails");
 
 
-// create instances----------------------------------------------------------------
+// shared instances — catalogue and order both need the same bookRepo
 const bookRepo = new BookRepository();
 const accountsRepo = new AccountsRepository(db);
 const orderRepo = new OrderRepository(db);
+const catalogue = new Catalogue(bookRepo);
 const invoice = new Invoice(orderRepo, bookRepo);
-const order = new Order(orderRepo);
+const order = new Order(orderRepo, bookRepo);
 const salesReport = new SalesReport(orderRepo);
 
 
-// enable CORS---------------------------------------------------------------------------
 fastify.register(cors, {
   origin: true,
 });
 
 
 
-// Register new account-------------------------------------------------------------------
 fastify.post("/api/register", async (req, reply) => {
   const { name, email, password } = req.body;
 
-  // Check if email already exists
   const existing = accountsRepo.getAccountByEmail(email);
   if (existing) {
     return reply.code(409).send({ error: "Email already in use" });
@@ -60,7 +57,7 @@ fastify.post("/api/register", async (req, reply) => {
 
 
 
-// login: customer and staff---------------------------------------------------
+// login for both customers and staff
 fastify.post("/api/login", async (req, reply) => {
 
   const { email, password } = req.body;
@@ -80,39 +77,34 @@ fastify.post("/api/login", async (req, reply) => {
 });
 
 
-// Catalogue------------------------------------------------------------------
-// Get all books
+// --- catalogue ---
+
 fastify.get("/api/books", async () => {
-  return Catalogue.getAllBooks();
+  return catalogue.getAllBooks();
 });
 
-// Search by title
 fastify.get("/api/books/search/title", async (req) => {
-  return Catalogue.searchByTitle(req.query.title || "");
+  return catalogue.searchByTitle(req.query.title || "");
 });
 
-// Search by author
 fastify.get("/api/books/search/author", async (req) => {
-  return Catalogue.searchByAuthor(req.query.author || "");
+  return catalogue.searchByAuthor(req.query.author || "");
 });
 
-// Filter available books
 fastify.get("/api/books/available", async () => {
-  return Catalogue.getAvailableBooks();
+  return catalogue.getAvailableBooks();
 });
 
-// Sort A-Z
 fastify.get("/api/books/sort/az", async () => {
-  return Catalogue.getBooksAlphabetical();
+  return catalogue.getBooksAlphabetical();
 });
 
 
 
 
 
-// update book inventory (staff)-------------------------------------------
+// --- staff: stock management ---
 
-// Update stock (increase / decrease)
 fastify.put("/api/staff/books/:id/stock", async (req, reply) => {
 
   const {id} = req.params;
@@ -136,22 +128,19 @@ fastify.put("/api/staff/books/:id/stock", async (req, reply) => {
 });
 
 
-// Shopping Cart----------------------------------------------------------------
+// --- cart ---
+// cart state lives on the frontend; each request rebuilds it server-side
 
-// Each request carries the cart state from the frontend
-// Add item to cart
 fastify.post("/api/cart/add", async (req) => {
 
   const { cartItems, book, quantity } = req.body;
   const cart = new ShoppingCart();
 
-  // restore existing cart state
   cartItems.forEach(item => cart.addItem(item.book, item.quantity));
   cart.addItem(book, quantity);
   return { items: cart.items, total: cart.getTotal() };
 });
 
-// Remove item from cart
 fastify.post("/api/cart/remove", async (req) => {
 
   const { cartItems, bookId } = req.body;
@@ -161,7 +150,6 @@ fastify.post("/api/cart/remove", async (req) => {
   return { items: cart.items, total: cart.getTotal() };
 });
 
-// Get cart total
 fastify.post("/api/cart/total", async (req) => {
 
   const { cartItems } = req.body;
@@ -172,18 +160,34 @@ fastify.post("/api/cart/total", async (req) => {
 
 
 
-// Orders------------------------------------------------------------------
+// payment is simulated — validates card details and returns a transaction ref
+fastify.post("/api/payment", async (req, reply) => {
 
-// Create a new order
+  const { cardName, cardNumber, amount } = req.body;
+  const payment = new PaymentDetails(cardName, cardNumber, amount);
+
+  try {
+    return payment.process();
+  } catch (err) {
+    return reply.code(400).send({ error: err.message });
+  }
+});
+
+
+// --- orders ---
+
 fastify.post("/api/orders", async (req, reply) => {
 
   const { accountId, bookId, quantity } = req.body;
-  const newOrder = order.createOrder(accountId, bookId, quantity);
 
-  return newOrder;
+  try {
+    const newOrder = order.createOrder(accountId, bookId, quantity);
+    return newOrder;
+  } catch (err) {
+    return reply.code(400).send({ error: err.message });
+  }
 });
 
-// Get all orders for an account
 fastify.get("/api/orders/account/:accountId", async (req) => {
 
   const { accountId } = req.params;
@@ -195,9 +199,8 @@ fastify.get("/api/orders/account/:accountId", async (req) => {
 
 
 
-// Invoice-----------------------------------------------------------
+// --- invoice ---
 
-// Generate invoice for an order
 fastify.get("/api/invoice/:orderId", async (req, reply) => {
 
   const orderId = Number(req.params.orderId);
@@ -216,9 +219,8 @@ fastify.get("/api/invoice/:orderId", async (req, reply) => {
 
 
 
-// Sales Report--------------------------------------------------------
+// --- sales report ---
 
-// Total sales by book
 fastify.get("/api/sales/book/:bookId", async (req) => {
 
   const {bookId} = req.params;
@@ -227,7 +229,6 @@ fastify.get("/api/sales/book/:bookId", async (req) => {
   return {bookId, totalSold: total};
 });
 
-// Total sales by account
 fastify.get("/api/sales/account/:accountId", async (req) => {
 
   const {accountId} = req.params;
@@ -236,7 +237,6 @@ fastify.get("/api/sales/account/:accountId", async (req) => {
   return {accountId, totalSold: total};
 });
 
-// Weekly sales by book
 fastify.get("/api/sales/book/:bookId/weekly", async (req) => {
 
   const {bookId} = req.params;
@@ -245,7 +245,7 @@ fastify.get("/api/sales/book/:bookId/weekly", async (req) => {
   return {bookId, weeklySold: total};
 });
 
-// Weekly sales all books (for staff dashboard)
+// all books — used by the staff dashboard
 fastify.get("/api/sales/weekly", async () => {
 
   return salesReport.getWeeklySalesAllBooks();
@@ -254,7 +254,6 @@ fastify.get("/api/sales/weekly", async () => {
 
 
 
-// Start Server------------------------------------------------------------
 const start = async () => {
   try {
     await fastify.listen({ port: 8000 });
