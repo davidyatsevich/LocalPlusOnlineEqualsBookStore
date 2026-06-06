@@ -10,7 +10,7 @@ class BookRepository {
     }
 
 
-    //load books from books.json-----------------------------------------------
+    //load books from books.json
     loadBooks() {
         const data = JSON.parse(fs.readFileSync(this.filePath, "utf-8"))
         return data.Books.map(
@@ -20,7 +20,7 @@ class BookRepository {
     }
 
 
-    //save books to books.json----------------------------------------------------
+    //save books to books.json
     saveBooks() {
         fs.writeFileSync(
             this.filePath,
@@ -29,9 +29,6 @@ class BookRepository {
     }
 
 
-    //Read Operation-------------------------------------------------------------------
-
-    //get all books
     getAllBooks() {
         return this.books;
     }
@@ -55,9 +52,7 @@ class BookRepository {
         );
     }
 
-    //add book-----------------------------------------------------------------
-    addBook(book) {   
-    // prevent duplicate IDs
+    addBook(book) {
         if (this.getBookById(book.id)) {
             throw new Error("Book ID already exists");
         }
@@ -66,19 +61,17 @@ class BookRepository {
         return book;
     }
 
-    //update book---------------------------------------------------------------
     updateBook(id, updatedBook) {
         const index = this.books.findIndex(b => b.id === Number(id));
         if (index === -1){
             return false;
         }
 
-        Object.assign(book, updatedData);
+        Object.assign(this.books[index], updatedBook);
         this.saveBooks();
         return true;
     }
 
-    //delete books---------------------------------------------------------------------
     deleteBook(id){
         const initialLength = this.books.length;
 
@@ -92,13 +85,17 @@ class BookRepository {
         return true;
     }
 
-    //stock operation------------------------------------------------------------
     reduceBookStock(id, copies){
         const book = this.getBookById(id);
 
         if (!book) return false;
 
-        book.reduceStock(copies);
+        // reduceStock throws if the quantity is invalid or exceeds stock
+        try {
+            book.reduceStock(Number(copies));
+        } catch (err) {
+            return false;
+        }
         this.saveBooks();
         return true;
     }
@@ -108,7 +105,11 @@ class BookRepository {
 
         if (!book) return false;
 
-        book.increaseStock(copies);
+        try {
+            book.increaseStock(Number(copies));
+        } catch (err) {
+            return false;
+        }
         this.saveBooks();
         return true;
     }

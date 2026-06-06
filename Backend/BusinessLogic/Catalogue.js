@@ -1,47 +1,53 @@
-const bookRepository = require("../Repositories/BookRepository");
-
+// read-only views over the book inventory
+// takes a BookRepository instance so it stays in sync with staff stock updates
 class Catalogue {
 
-    //get books------------------------------------------------
-    getAllBooks() {
-        return bookRepository.getAllBooks();
+    constructor(bookRepository) {
+        this.bookRepository = bookRepository;
     }
 
-    // search by title------------------------------------------------
+    getAllBooks() {
+        return this.bookRepository.getAllBooks();
+    }
+
     searchByTitle(title) {
         if (!title) return [];
 
-        return bookRepository
+        return this.bookRepository
             .getAllBooks()
             .filter(book =>
                 book.title.toLowerCase().includes(title.toLowerCase())
             );
     }
 
-    //search by author------------------------------------------------
     searchByAuthor(author) {
         if (!author) return [];
 
-        return bookRepository
+        return this.bookRepository
             .getAllBooks()
             .filter(book =>
                 book.author.toLowerCase().includes(author.toLowerCase())
             );
     }
 
-    // filter books a-z------------------------------------------------
     getBooksAlphabetical() {
-    return bookRepository
-        .getAllBooks()
-        .slice() 
-        .sort((a, b) =>
-            a.title.toLowerCase().localeCompare(b.title.toLowerCase())
-        );
+        return this.bookRepository
+            .getAllBooks()
+            .slice()
+            .sort((a, b) =>
+                a.title.toLowerCase().localeCompare(b.title.toLowerCase())
+            );
     }
 
-    // filter by price------------------------------------------------
+    // only books with stock > 0
+    getAvailableBooks() {
+        return this.bookRepository
+            .getAllBooks()
+            .filter(book => book.stock > 0);
+    }
+
     filterByPrice(min, max) {
-        return bookRepository
+        return this.bookRepository
             .getAllBooks()
             .filter(book =>
                 book.price >= min && book.price <= max
@@ -49,4 +55,4 @@ class Catalogue {
     }
 }
 
-module.exports = new Catalogue();
+module.exports = Catalogue;
