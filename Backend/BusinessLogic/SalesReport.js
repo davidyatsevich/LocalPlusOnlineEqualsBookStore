@@ -1,7 +1,8 @@
-// sales report — reads from OrderRepository only
+// sales report — reads orders, plus book prices for revenue
 class SalesReport {
-   constructor(orderRepository) {
+   constructor(orderRepository, bookRepository) {
        this.orderRepository = orderRepository;
+       this.bookRepository = bookRepository;
    }
 
 
@@ -43,6 +44,35 @@ class SalesReport {
         summary[order.bookId] = (summary[order.bookId] || 0) + order.quantity;
     });
     return summary;
+    }
+
+    // headline figures for the dashboard over the last 7 days
+    getWeeklySummary() {
+        const oneWeekAgo = new Date();
+        oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+
+        const orders = this.orderRepository.getAllOrders()
+            .filter(order => new Date(order.date) >= oneWeekAgo);
+
+        const byBook = {};
+        let units = 0;
+        orders.forEach(order => {
+            byBook[order.bookId] = (byBook[order.bookId] || 0) + order.quantity;
+            units += order.quantity;
+        });
+
+        let revenue = 0;
+        let bestSeller = null;
+        Object.keys(byBook).forEach(bookId => {
+            const qty = byBook[bookId];
+            const book = this.bookRepository ? this.bookRepository.getBookById(bookId) : null;
+            if (book) revenue += book.price * qty;
+            if (!bestSeller || qty > bestSeller.quantity) {
+                bestSeller = { bookId: Number(bookId), title: book ? book.title : null, quantity: qty };
+            }
+        });
+
+        return { units, orders: orders.length, revenue, bestSeller };
     }
 }
 
