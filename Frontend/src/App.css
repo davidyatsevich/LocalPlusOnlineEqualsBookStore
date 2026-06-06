@@ -1,34 +1,130 @@
-body {
-  margin: 0;
-  font-family: Arial, sans-serif;
-  background: #e9f0f0;
+/* layout styles — adds to style.css, doesn't override it */
+
+/* nav bar */
+.nav-tabs {
+  align-items: center;
+  flex-wrap: wrap;
 }
 
-.container {
-  padding: 20px;
-  text-align: center;
+.nav-tabs a {
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.95rem;
+  padding: 10px 16px;
+  border-radius: 4px;
+  color: var(--color-dominant);
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
-h1 {
-  color: black;
-  margin-bottom: 20px;
+.nav-tabs a:hover {
+  background-color: var(--color-bg-sky);
 }
 
-.grid {
+/* react-router sets .active on the current NavLink */
+.nav-tabs a.active {
+  background-color: var(--color-dominant);
+  color: #ffffff;
+}
+
+.nav-spacer {
+  flex: 1;
+}
+
+.nav-user {
+  font-weight: 600;
+  color: var(--color-accent-tan);
+  padding: 0 8px;
+}
+
+/* home page cards */
+.home-cards {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 15px;
-  padding: 10px;
+  gap: 16px;
+  margin-top: 24px;
 }
 
-.card {
-  background: white;
-  padding: 15px;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-  transition: transform 0.2s ease;
+.home-card {
+  background: var(--color-bg-light);
+  border: 1px solid var(--color-bg-sky);
+  border-radius: 8px;
+  padding: 18px;
 }
 
-.card:hover {
-  transform: scale(1.03);
+.home-card h3 {
+  margin-top: 0;
+}
+
+/* shared helpers */
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.toolbar input[type="text"],
+.toolbar select {
+  margin: 0;
+  max-width: 260px;
+}
+
+.inline-input {
+  width: 80px;
+  margin: 0;
+  display: inline-block;
+}
+
+.text-right {
+  text-align: right;
+}
+
+.muted {
+  color: var(--color-accent-tan);
+}
+
+.empty-state {
+  padding: 30px;
+  text-align: center;
+  color: var(--color-accent-tan);
+}
+
+.btn-danger {
+  background-color: var(--color-accent-red) !important;
+  color: #fff;
+}
+
+.btn-secondary {
+  background-color: var(--color-accent-tan) !important;
+  color: #fff;
+}
+
+.totals-row td {
+  font-weight: 700;
+}
+
+.auth-shell {
+  max-width: 380px;
+}
+
+.form-actions {
+  margin-top: 16px;
+  display: flex;
+  gap: 10px;
+}
+
+/* field group: label + input + inline error */
+.field-group {
+  margin-bottom: 14px;
+}
+
+.field-group label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+.field-group .error-msg {
+  margin-top: 6px;
 }
