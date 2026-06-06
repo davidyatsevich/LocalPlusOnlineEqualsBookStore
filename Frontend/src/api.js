@@ -48,6 +48,17 @@ export const updateStock = (bookId, type, amount) =>
     body: JSON.stringify({ type, amount: Number(amount) }),
   });
 
+export const addBook = (title, author, price, stock) =>
+  request('/api/staff/books', {
+    method: 'POST',
+    body: JSON.stringify({
+      title,
+      author,
+      price: Number(price),
+      stock: Number(stock),
+    }),
+  });
+
 // payment (simulated — no real transaction)
 export const processPayment = (cardName, cardNumber, amount) =>
   request('/api/payment', {
@@ -73,4 +84,5 @@ export const getInvoice = (orderId) => request(`/api/invoice/${orderId}`);
 
 // sales report (staff only)
 export const getWeeklySales = () => request('/api/sales/weekly');
+export const getSalesSummary = () => request('/api/sales/summary');
 export const getTotalSalesByBook = (bookId) => request(`/api/sales/book/${bookId}`);
