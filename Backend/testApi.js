@@ -112,6 +112,18 @@ async function run() {
   const salesByBook = await api('GET', '/api/sales/book/1');
   check('sales by book 1 -> 2 (ID coercion fix)', salesByBook.data && salesByBook.data.totalSold === 2, JSON.stringify(salesByBook.data));
 
+  console.log('\n=== 6. STAFF: ADD BOOK + SALES SUMMARY ===');
+  const addRes = await api('POST', '/api/staff/books', { title: 'Test Driven Development', author: 'Kent Beck', price: 30, stock: 4 });
+  check('add book returns a new id and title', addRes.data && addRes.data.id && addRes.data.title === 'Test Driven Development', JSON.stringify(addRes.data));
+  const afterAdd = (await api('GET', '/api/books')).data;
+  check('added book appears in the catalogue (6 total)', afterAdd.length === 6, `count ${afterAdd.length}`);
+  const addBad = await api('POST', '/api/staff/books', { title: '', author: 'Nobody', price: 10, stock: 1 });
+  check('add book with empty title -> 400', addBad.status === 400, `status ${addBad.status}`);
+
+  const summary = await api('GET', '/api/sales/summary');
+  check('summary: 2 units, 1 order, $25.98 revenue', summary.data && summary.data.units === 2 && summary.data.orders === 1 && Math.abs(summary.data.revenue - 25.98) < 0.001, JSON.stringify(summary.data));
+  check('summary: best seller is book 1', summary.data && summary.data.bestSeller && summary.data.bestSeller.bookId === 1, JSON.stringify(summary.data && summary.data.bestSeller));
+
   console.log(`\n=== SUMMARY: ${passed} passed, ${failed} failed ===\n`);
   process.exit(failed === 0 ? 0 : 1);
 }
