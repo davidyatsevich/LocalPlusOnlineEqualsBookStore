@@ -15,14 +15,14 @@ const PaymentDetails = require("./BusinessLogic/PaymentDetails");
 const Book = require("./BusinessLogic/Book");
 
 
-// shared instances — catalogue and order both need the same bookRepo
+// shared instances — catalogue and order both use the same bookRepo
 const bookRepo = new BookRepository(db);
 const accountsRepo = new AccountsRepository(db);
 const orderRepo = new OrderRepository(db);
 const catalogue = new Catalogue(bookRepo);
 const invoice = new Invoice(orderRepo, bookRepo);
 const order = new Order(orderRepo, bookRepo);
-const salesReport = new SalesReport(orderRepo, bookRepo); // bookRepo for revenue
+const salesReport = new SalesReport(orderRepo, bookRepo); 
 
 
 fastify.register(cors, {

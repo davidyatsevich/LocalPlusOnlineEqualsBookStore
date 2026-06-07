@@ -27,6 +27,34 @@
       "email": "manager@bookstore.com",
       "password": "manager123",
       "role": "staff"
+    },
+    {
+      "id": 1780826791052,
+      "name": "Rye Fahim",
+      "email": "rye@gmail.com",
+      "password": "123456",
+      "role": "customer"
+    },
+    {
+      "id": 1780826939583,
+      "name": "Joe Doe",
+      "email": "Jo@90.com",
+      "password": "password",
+      "role": "customer"
+    },
+    {
+      "id": 1780827801538,
+      "name": "Jo Smith",
+      "email": "Jo@gmail.com",
+      "password": "123456",
+      "role": "customer"
+    },
+    {
+      "id": 1780828443366,
+      "name": "Jane Doe",
+      "email": "Jane@gmail.com",
+      "password": "123456",
+      "role": "customer"
     }
   ]
 }
