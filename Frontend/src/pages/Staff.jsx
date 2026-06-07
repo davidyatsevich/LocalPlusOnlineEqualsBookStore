@@ -1,6 +1,6 @@
 
 import { useState, useEffect, useCallback } from 'react';
-import { getBooks, updateStock, getWeeklySales } from '../api.js';
+import { getBooks, updateStock, addBook, getWeeklySales, getSalesSummary } from '../api.js';
 import { useAuth } from '../state/auth.jsx';
 
 function isPositiveInteger(value) {
@@ -13,6 +13,8 @@ function InventorySection() {
   const [loading, setLoading] = useState(true);
   const [amounts, setAmounts] = useState({});
   const [messages, setMessages] = useState({});
+  const [form, setForm] = useState({ title: '', author: '', price: '', stock: '' });
+  const [addMsg, setAddMsg] = useState(null);
 
   const loadBooks = useCallback(async () => {
     setLoading(true);
@@ -72,11 +74,61 @@ function InventorySection() {
     setAmounts((prev) => ({ ...prev, [bookId]: value }));
   };
 
+  const setField = (key, value) => setForm((prev) => ({ ...prev, [key]: value }));
+
+  const handleAddBook = async (e) => {
+    e.preventDefault();
+    const { title, author, price, stock } = form;
+
+    if (!title.trim() || !author.trim()) {
+      setAddMsg({ kind: 'error', text: 'Title and author are required.' });
+      return;
+    }
+    if (price === '' || isNaN(price) || Number(price) <= 0) {
+      setAddMsg({ kind: 'error', text: 'Price must be greater than 0.' });
+      return;
+    }
+    if (stock === '' || !Number.isInteger(Number(stock)) || Number(stock) < 0) {
+      setAddMsg({ kind: 'error', text: 'Stock must be a whole number (0 or more).' });
+      return;
+    }
+
+    try {
+      const created = await addBook(title.trim(), author.trim(), price, stock);
+      setForm({ title: '', author: '', price: '', stock: '' });
+      setAddMsg({ kind: 'success', text: `Added "${created.title}" to the catalogue.` });
+      await loadBooks();
+    } catch (err) {
+      setAddMsg({ kind: 'error', text: err.message || 'Could not add book.' });
+    }
+  };
+
   if (loading) return <p className="muted">Loading inventory…</p>;
 
   return (
     <section>
       <h2>Update Inventory</h2>
+
+      <form onSubmit={handleAddBook} style={{ marginBottom: '1.5rem' }}>
+        <h3>Add a new book</h3>
+        <div className="toolbar">
+          <input type="text" placeholder="Title" value={form.title}
+            onChange={(e) => setField('title', e.target.value)} aria-label="New book title" />
+          <input type="text" placeholder="Author" value={form.author}
+            onChange={(e) => setField('author', e.target.value)} aria-label="New book author" />
+          <input type="number" placeholder="Price" min="0" step="0.01" className="inline-input"
+            style={{ width: '90px' }} value={form.price}
+            onChange={(e) => setField('price', e.target.value)} aria-label="New book price" />
+          <input type="number" placeholder="Stock" min="0" className="inline-input"
+            style={{ width: '90px' }} value={form.stock}
+            onChange={(e) => setField('stock', e.target.value)} aria-label="New book stock" />
+          <button type="submit">Add Book</button>
+        </div>
+        {addMsg && (
+          <p className={addMsg.kind === 'error' ? 'error-msg' : 'success-msg'}>{addMsg.text}</p>
+        )}
+      </form>
+
       {books.length === 0 ? (
         <p className="muted empty-state">No books found in the catalogue.</p>
       ) : (
@@ -140,16 +192,20 @@ function InventorySection() {
 
 function SalesReportSection() {
   const [sales, setSales] = useState(null);
+  const [summary, setSummary] = useState(null);
   const [bookMap, setBookMap] = useState({});
   const [loading, setLoading] = useState(true);
 
   const loadReport = useCallback(async () => {
     setLoading(true);
     try {
-      const [salesData, books] = await Promise.all([getWeeklySales(), getBooks()]);
+      const [salesData, books, summaryData] = await Promise.all([
+        getWeeklySales(), getBooks(), getSalesSummary(),
+      ]);
       const map = {};
       books.forEach((b) => { map[b.id] = b.title; });
       setSales(salesData);
+      setSummary(summaryData);
       setBookMap(map);
     } finally {
       setLoading(false);
@@ -171,6 +227,34 @@ function SalesReportSection() {
       >
         {loading ? 'Loading…' : 'Refresh'}
       </button>
+
+      {summary && (
+        <div className="home-cards" style={{ marginTop: 0, marginBottom: '18px' }}>
+          <div className="home-card">
+            <h3>Units sold</h3>
+            <p style={{ fontSize: '1.5rem', margin: 0 }}>{summary.units}</p>
+            <p className="muted" style={{ margin: 0 }}>this week</p>
+          </div>
+          <div className="home-card">
+            <h3>Revenue</h3>
+            <p style={{ fontSize: '1.5rem', margin: 0 }}>${summary.revenue.toFixed(2)}</p>
+            <p className="muted" style={{ margin: 0 }}>this week</p>
+          </div>
+          <div className="home-card">
+            <h3>Orders</h3>
+            <p style={{ fontSize: '1.5rem', margin: 0 }}>{summary.orders}</p>
+            <p className="muted" style={{ margin: 0 }}>this week</p>
+          </div>
+          <div className="home-card">
+            <h3>Best seller</h3>
+            <p style={{ margin: '4px 0 0' }}>
+              {summary.bestSeller
+                ? `${summary.bestSeller.title ?? `Book #${summary.bestSeller.bookId}`} (${summary.bestSeller.quantity} sold)`
+                : '—'}
+            </p>
+          </div>
+        </div>
+      )}
 
       {loading ? (
         <p className="muted">Loading sales data…</p>

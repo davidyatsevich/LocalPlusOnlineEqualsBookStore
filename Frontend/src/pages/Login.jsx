@@ -94,26 +94,6 @@ export default function Login() {
 
   return (
     <div className="animate-fade auth-shell">
-      {/* login / register toggle */}
-      <div className="form-actions" style={{ marginBottom: '1.5rem' }}>
-        <button
-          type="button"
-          className={isLoginMode ? '' : 'btn-secondary'}
-          onClick={() => switchMode('login')}
-          aria-pressed={isLoginMode}
-        >
-          Login
-        </button>
-        <button
-          type="button"
-          className={!isLoginMode ? '' : 'btn-secondary'}
-          onClick={() => switchMode('register')}
-          aria-pressed={!isLoginMode}
-        >
-          Create Account
-        </button>
-      </div>
-
       <h2>{isLoginMode ? 'Login to Your Account' : 'Create a New Account'}</h2>
 
       <form onSubmit={handleSubmit} noValidate>

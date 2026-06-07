@@ -12,6 +12,7 @@ const Order = require("./BusinessLogic/Order");
 const SalesReport = require("./BusinessLogic/SalesReport");
 const ShoppingCart = require("./BusinessLogic/ShoppingCart");
 const PaymentDetails = require("./BusinessLogic/PaymentDetails");
+const Book = require("./BusinessLogic/Book");
 
 
 // shared instances — catalogue and order both need the same bookRepo
@@ -21,7 +22,7 @@ const orderRepo = new OrderRepository(db);
 const catalogue = new Catalogue(bookRepo);
 const invoice = new Invoice(orderRepo, bookRepo);
 const order = new Order(orderRepo, bookRepo);
-const salesReport = new SalesReport(orderRepo);
+const salesReport = new SalesReport(orderRepo, bookRepo); // bookRepo for revenue
 
 
 fastify.register(cors, {
@@ -125,6 +126,37 @@ fastify.put("/api/staff/books/:id/stock", async (req, reply) => {
   }
 
   return { message: "Stock updated successfully" };
+});
+
+
+// add a new book to the catalogue
+fastify.post("/api/staff/books", async (req, reply) => {
+
+  const { title, author, price, stock } = req.body;
+
+  // basic validation
+  if (!title || !title.trim() || !author || !author.trim()) {
+    return reply.code(400).send({ error: "Title and author are required" });
+  }
+  if (isNaN(price) || Number(price) <= 0) {
+    return reply.code(400).send({ error: "Price must be greater than 0" });
+  }
+  if (!Number.isInteger(Number(stock)) || Number(stock) < 0) {
+    return reply.code(400).send({ error: "Stock must be a whole number of 0 or more" });
+  }
+
+  // next id = highest existing id + 1
+  const books = bookRepo.getAllBooks();
+  const nextId = books.reduce((max, b) => Math.max(max, b.id), 0) + 1;
+  const newBook = new Book(nextId, title.trim(), author.trim(), Number(price), Number(stock));
+
+  try {
+    bookRepo.addBook(newBook);
+  } catch (err) {
+    return reply.code(400).send({ error: err.message });
+  }
+
+  return newBook;
 });
 
 
@@ -249,6 +281,12 @@ fastify.get("/api/sales/book/:bookId/weekly", async (req) => {
 fastify.get("/api/sales/weekly", async () => {
 
   return salesReport.getWeeklySalesAllBooks();
+});
+
+// headline numbers for the dashboard (units, revenue, orders, best seller)
+fastify.get("/api/sales/summary", async () => {
+
+  return salesReport.getWeeklySummary();
 });
 
 
