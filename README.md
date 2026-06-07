@@ -1,6 +1,6 @@
 # Favourite Books — Online Bookstore (SWE30003 Assignment 3)
 
-A web-based online bookstore implemented as a **two-tier application**:
+A web-based online bookstore implemented as a **three-tier application**:
 
 - **Backend** (`/Backend`) — Node.js + Fastify REST API over a 4-layer design
   (Actors → Business Logic → Repositories → Persistence with JSON flat files).

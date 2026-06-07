@@ -34,6 +34,41 @@
       "title": "To Kill a Mockingbird",
       "price": 13.99,
       "stock": 5
+    },
+    {
+      "id": 6,
+      "author": "R.F Kuang",
+      "title": "Babel",
+      "price": 24,
+      "stock": 10
+    },
+    {
+      "id": 7,
+      "author": "Taylor Jenkins Reid",
+      "title": "Atmosphere",
+      "price": 13.5,
+      "stock": 16
+    },
+    {
+      "id": 8,
+      "author": "Samantha Shannon",
+      "title": "The Priory of The Orange Tree",
+      "price": 24.99,
+      "stock": 9
+    },
+    {
+      "id": 9,
+      "author": "R.F Kuang",
+      "title": "The Poppy War",
+      "price": 19.99,
+      "stock": 16
+    },
+    {
+      "id": 10,
+      "author": "Madeline Miller",
+      "title": "Circe",
+      "price": 13.95,
+      "stock": 14
     }
   ]
 }
