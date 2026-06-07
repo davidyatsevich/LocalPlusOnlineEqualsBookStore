@@ -60,13 +60,17 @@ export default function Browse() {
 
   async function handleSearch() {
     setStatusMsg(null);
+
+    if (searchTerm.trim() === '') {
+      setStatusMsg({ type: 'error', text: 'Please enter a search term.' });
+      return;
+    }
+
     setLoading(true);
     setFetchError(null);
     try {
       let data;
-      if (searchTerm.trim() === '') {
-        data = await getBooks();
-      } else if (searchMode === 'title') {
+      if (searchMode === 'title') {
         data = await searchByTitle(searchTerm.trim());
       } else {
         data = await searchByAuthor(searchTerm.trim());
@@ -78,6 +82,7 @@ export default function Browse() {
       setLoading(false);
     }
   }
+
 
   async function handleSort() {
     setStatusMsg(null);
@@ -92,6 +97,7 @@ export default function Browse() {
       setLoading(false);
     }
   }
+  
 
   async function handleReset() {
     setStatusMsg(null);

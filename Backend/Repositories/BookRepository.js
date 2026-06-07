@@ -1,53 +1,34 @@
-const fs = require("fs");
-const path = require("path")
 const Book = require("../BusinessLogic/Book");
 
 class BookRepository {
 
-    constructor() {
-        this.filePath = path.join(__dirname, "../Persistence/books.json");
-        this.books = this.loadBooks();
-    }
 
-
-    //load books from books.json
-    loadBooks() {
-        const data = JSON.parse(fs.readFileSync(this.filePath, "utf-8"))
-        return data.Books.map(
+    constructor(db) {
+        this.db = db; 
+        this.db.Books = this.db.Books.map(
             b => new Book(b.id, b.title, b.author, b.price, b.stock)
-
         );
     }
-
-
-    //save books to books.json
-    saveBooks() {
-        fs.writeFileSync(
-            this.filePath,
-            JSON.stringify({Books: this.books }, null, 2)
-        );
-    }
-
 
     getAllBooks() {
-        return this.books;
+        return this.db.Books;
     }
 
     //get book by id
     getBookById(id){
-        return this.books.find(book => book.id === Number(id));
+        return this.db.Books.find(book => book.id === Number(id));
     }
 
     //get book by title
     getBookByTitle(title){
-        return this.books.filter(book =>
+        return this.db.Books.filter(book =>
             book.title.toLowerCase().includes(title.toLowerCase())
         );
     }
 
     //get book by author
     getBookByAuthor(author){
-        return this.books.filter(book =>
+        return this.db.Books.filter(book =>
             book.author.toLowerCase().includes(author.toLowerCase())
         );
     }
@@ -56,32 +37,32 @@ class BookRepository {
         if (this.getBookById(book.id)) {
             throw new Error("Book ID already exists");
         }
-        this.books.push(book);
-        this.saveBooks();
+        this.db.Books.push(book);
+        this.db.saveBooks();
         return book;
     }
 
     updateBook(id, updatedBook) {
-        const index = this.books.findIndex(b => b.id === Number(id));
+        const index = this.db.Books.findIndex(b => b.id === Number(id));
         if (index === -1){
             return false;
         }
 
-        Object.assign(this.books[index], updatedBook);
+        Object.assign(this.db.Books[index], updatedBook);
         this.saveBooks();
         return true;
     }
 
     deleteBook(id){
-        const initialLength = this.books.length;
+        const initialLength = this.db.Books.length;
 
-        this.books = this.books.filter(b => b.id !== Number(id));
+        this.books = this.db.Books.filter(b => b.id !== Number(id));
 
-        if (this.books.length === initialLength) {
+        if (this.db.Books.length === initialLength) {
             return false;
         }
 
-        this.saveBooks();
+        this.db.saveBooks();
         return true;
     }
 
@@ -90,13 +71,13 @@ class BookRepository {
 
         if (!book) return false;
 
-        // reduceStock throws if the quantity is invalid or exceeds stock
-        try {
+        // reduce stock throws if the quantity is invalid or exceeds stock
+        try { 
             book.reduceStock(Number(copies));
         } catch (err) {
             return false;
         }
-        this.saveBooks();
+        this.db.saveBooks();
         return true;
     }
 
@@ -110,7 +91,7 @@ class BookRepository {
         } catch (err) {
             return false;
         }
-        this.saveBooks();
+        this.db.saveBooks();
         return true;
     }
 }

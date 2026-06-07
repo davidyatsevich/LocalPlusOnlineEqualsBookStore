@@ -16,7 +16,7 @@ const Book = require("./BusinessLogic/Book");
 
 
 // shared instances — catalogue and order both need the same bookRepo
-const bookRepo = new BookRepository();
+const bookRepo = new BookRepository(db);
 const accountsRepo = new AccountsRepository(db);
 const orderRepo = new OrderRepository(db);
 const catalogue = new Catalogue(bookRepo);
@@ -28,7 +28,6 @@ const salesReport = new SalesReport(orderRepo, bookRepo); // bookRepo for revenu
 fastify.register(cors, {
   origin: true,
 });
-
 
 
 fastify.post("/api/register", async (req, reply) => {
