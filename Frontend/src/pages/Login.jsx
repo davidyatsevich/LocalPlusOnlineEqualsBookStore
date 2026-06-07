@@ -166,9 +166,26 @@ export default function Login() {
         {apiError && <p className="error-msg">{apiError}</p>}
 
         {successMsg && <p className="success-msg">{successMsg}</p>}
-        <div className="form-actions">
+        <div className="form-actions" style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
           <button type="submit" disabled={loading}>
             {loading ? 'Please wait…' : isLoginMode ? 'Login' : 'Create Account'}
+          </button>
+          <button
+            type="button"
+            onClick={() => switchMode(isLoginMode ? 'register' : 'login')}
+            disabled={loading}
+            style={{
+              background: 'none',
+              border: '2px solid #0c5a3a',
+              color: '#0c5a3a',
+              fontWeight: 700,
+              padding: '0.5rem 1rem',
+              borderRadius: '6px',
+              cursor: 'pointer',
+              font: 'inherit',
+            }}
+          >
+            {isLoginMode ? 'Register' : 'Back to Login'}
           </button>
         </div>
       </form>
